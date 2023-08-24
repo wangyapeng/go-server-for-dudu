@@ -1,16 +1,19 @@
 package main
 
 import (
+	_ "dudu/models"
 	_ "dudu/routers"
+	_ "dudu/services"
 
-	beego "github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/client/orm"
+	server "github.com/beego/beego/v2/server/web"
 )
 
 func main() {
-	if beego.BConfig.RunMode == "dev" {
-		// beego.BConfig.WebConfig.DirectoryIndex = false
-		// beego.BConfig.WebConfig.ViewsPath = "views"
-		// beego.BConfig.WebConfig.StaticDir["/static"] = "static"
+	if server.BConfig.RunMode == "dev" {
+		orm.Debug = true
+		server.BConfig.Listen.AdminAddr = "localhost"
+		server.BConfig.Listen.AdminPort = 8088
 	}
-	beego.Run()
+	server.Run()
 }
