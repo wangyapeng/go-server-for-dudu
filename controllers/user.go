@@ -4,10 +4,8 @@ import (
 
 	// "encoding/json"
 
-	"encoding/json"
+	"dudu/services"
 	"fmt"
-
-	"dudu/models"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -16,38 +14,35 @@ type UserController struct {
 	beego.Controller
 }
 
-// @Title CreateUser
-// @Description create users
-// @Param	body		body 	models.User	true		"body for user content"
-// @Success 200 {int} models.User.Id
-// @Failure 403 body is empty
-// @router / [post]
-func (u *UserController) Post() {
-	var user models.User
-	json.Unmarshal(u.Ctx.Input.RequestBody, &user)
+var userService = services.UserService{}
 
-	fmt.Println(user)
-	u.SetData("succees")
-	u.Data["data"] = "delete success!"
-	u.ServeJSON()
+// user register
+// return user.id
+func (u *UserController) Register() {
+	id := userService.CreateNewUser(u.Ctx.Input.RequestBody)
+	if id == 0 {
+		u.Ctx.Output.Status = 500
+		u.Ctx.Resp(map[string]string{"errorMsg": "用户已存在", "errorCode": "5001200"})
+	} else {
+		u.Data["json"] = id
+		u.Ctx.Resp(map[string]any{"data": id, "success": true})
+	}
 }
 
-// @Title GetAll
-// @Description get all Users
-// @Success 200 {object} models.User
-// @router / [get]
-func (u *UserController) Register() {
+func (u *UserController) Login() {
+	// res := userService.UserLogin(u.Ctx.Input.RequestBody)
+	email := u.Ctx.Input.Query("email")
+	password := u.Ctx.Input.Query("password")
+	res := userService.UserLogin(email, password)
+	fmt.Println(res)
 
-	var user models.User
-	json.Unmarshal(u.Ctx.Input.RequestBody, &user)
+	u.Ctx.Resp("lgoin")
+}
 
-	fmt.Println(user)
-	u.SetData("succees")
-	u.Data["data"] = "delete success!"
-	u.ServeJSON()
+func (u *UserController) Logout() {
+	u.Ctx.Resp("logout")
 }
 
 func init() {
-	models.Test()
-	models.Test3()
+
 }
