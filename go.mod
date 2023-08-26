@@ -4,8 +4,8 @@ go 1.20
 
 require (
 	github.com/beego/beego/v2 v2.1.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-sql-driver/mysql v1.7.1
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/smartystreets/goconvey v1.8.1
 	golang.org/x/crypto v0.12.0
 )

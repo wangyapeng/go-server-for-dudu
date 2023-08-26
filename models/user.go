@@ -1,13 +1,13 @@
 package models
 
 import (
+	"dudu/util"
 	"fmt"
 	"time"
 
 	// "strconv"
 	// "time"
 	orm "github.com/beego/beego/v2/client/orm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // 一个未开通应用新注册的用户的信息包括
@@ -20,7 +20,7 @@ import (
 // updatedStamp
 
 type User struct {
-	Id           uint64    `orm:"column(id);orm:auto"`
+	Id           uint64    `orm:"column(id)"`
 	Name         string    `orm:"column(name)"`
 	Telephone    string    `orm:"column(telephone)"`
 	PassWord     string    `orm:"column(password)"`
@@ -32,23 +32,6 @@ type User struct {
 
 func (u *User) TableName() string {
 	return "user"
-}
-
-// GetPwd 给密码加密
-func GetPwd(pwd string) ([]byte, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
-	return hash, err
-}
-
-// ComparePwd 比对密码
-func ComparePwd(pwd1 string, pwd2 string) bool {
-	// Returns true on success, pwd1 is for the database.
-	err := bcrypt.CompareHashAndPassword([]byte(pwd1), []byte(pwd2))
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
 }
 
 // Insert
@@ -65,7 +48,7 @@ func (u *User) Insert(data User) (int16, error) {
 	user.Telephone = data.Telephone
 	user.Email = data.Email
 
-	pwd, _ := GetPwd(data.PassWord)
+	pwd, _ := util.GetPwd(string(data.PassWord))
 	user.PassWord = string(pwd)
 
 	ret, error := orm.NewOrm().Insert(user)
@@ -101,29 +84,56 @@ func (u *User) ValidUserInfo(data User) bool {
 	return true
 }
 
-func (u *User) VerifyUser(data User) bool {
-	fmt.Println("---------> 查询用户的信息", data.Telephone)
-	qb, _ := orm.NewQueryBuilder("mysql")
+func (u *User) HasUser(data User) User {
 
-	var local []string
-
-	qb.Select("telephone").
-		From("user").
-		Where("telephone = ?").
-		Limit(10).Offset(0)
-
-	sql := qb.String()
-
+	// 创建orm对象
 	o := orm.NewOrm()
-	tel := data.Telephone[:]
-	err, _ := o.Raw(sql, tel).QueryRows(&local)
 
-	fmt.Println("---------> 查询到的数据行数", err, local)
-	if cap(local) > 0 {
-		return false
-	} else {
-		return true
+	// 获取 QuerySeter 对象，并设置表名orders
+	qs := o.QueryTable("user")
+
+	// 定义保存查询结果的变量
+	user := User{}
+
+	// 使用QuerySeter 对象构造查询条件，并执行查询。
+	err := qs.Filter("telephone", data.Telephone).One(&user)
+
+	if err == orm.ErrMultiRows {
+		// 多条的时候报错
+		fmt.Printf("Returned Multi Rows Not One")
 	}
+	if err == orm.ErrNoRows {
+		// 没有找到记录
+		fmt.Printf("Not row found")
+	}
+
+	return user
+}
+
+func (u *User) FindUserByEmail(data User) User {
+
+	// 创建orm对象
+	o := orm.NewOrm()
+
+	// 获取 QuerySeter 对象，并设置表名orders
+	qs := o.QueryTable("user")
+
+	// 定义保存查询结果的变量
+	user := User{}
+
+	// 使用QuerySeter 对象构造查询条件，并执行查询。
+	err := qs.Filter("email", data.Email).One(&user)
+
+	if err == orm.ErrMultiRows {
+		// 多条的时候报错
+		fmt.Printf("Returned Multi Rows Not One")
+	}
+	if err == orm.ErrNoRows {
+		// 没有找到记录
+		fmt.Printf("Not row found")
+	}
+
+	return user
 }
 
 func init() {

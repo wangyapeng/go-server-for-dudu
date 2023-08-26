@@ -1,7 +1,10 @@
 package util
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"errors"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type StandardClaims struct {
@@ -15,16 +18,56 @@ type StandardClaims struct {
 }
 
 type MyCustomClaims struct {
-	ID             int64
-	Username       string
-	StandardClaims jwt.StandardClaims
+	UserID     int
+	Username   string
+	GrantScope string
+	jwt.RegisteredClaims
 }
+
+// 签名密钥
+const sign_key = "hello_jwt_et325325"
 
 func GenerateToken() (string, error) {
-	return "xx", nil
+	claim := MyCustomClaims{
+		UserID:     000001,
+		Username:   "Tom",
+		GrantScope: "read_user_info",
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "Auth_Server",                                   // 签发者
+			Subject:   "Tom",                                           // 签发对象
+			Audience:  jwt.ClaimStrings{"Android_APP", "IOS_APP"},      //签发受众
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),   //过期时间
+			NotBefore: jwt.NewNumericDate(time.Now().Add(time.Second)), //最早使用时间
+			IssuedAt:  jwt.NewNumericDate(time.Now()),                  //签发时间
+			ID:        "632632632632",                                  // wt ID, 类似于盐值
+		},
+	}
+
+	// jwt.NewWithClaims 他的加密方式应该选择jwt.SigningMethodHS256 而不是 jwt.SigningMethodES256 ，这个H是hash的意思，而SigningMethodES256是没有SignedString方法的
+
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+
+	s, err := t.SignedString([]byte(sign_key))
+
+	return s, err
 }
 
-func ParseToken(token string) {
+func ParseToken(token_string string) (*MyCustomClaims, error) {
+	token, err := jwt.ParseWithClaims(token_string, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(sign_key), nil //返回签名密钥
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	if !token.Valid {
+		return nil, errors.New("claim invalid")
+	}
+
+	claims, ok := token.Claims.(*MyCustomClaims)
+	if !ok {
+		return nil, errors.New("invalid claim type")
+	}
+
+	return claims, nil
 }

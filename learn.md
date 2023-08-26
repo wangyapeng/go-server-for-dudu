@@ -26,3 +26,9 @@
 err, _ = XXX(xxx,xxx)
 
 ```
+
+# day4 踩坑记录
+
+* 生成jwt token时的api
+* 指针的一些用法。
+
