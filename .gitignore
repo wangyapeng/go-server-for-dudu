@@ -19,3 +19,7 @@ vendor/
 
 # Go workspace file
 go.work
+
+www/node_modules
+www/dist
+go-server-for-dudu

@@ -13,6 +13,12 @@ func init() {
 
 	beego.CtrlGet("/", (*controllers.HomeController).GetTemplate)
 
+	// 登录静态页面
+	beego.CtrlGet("/login", (*controllers.HomeController).GetTemplate)
+
+	// 注册静态页面
+	// beego.CtrlGet("register", (*controllers.HomeController).GetTemplate)
+
 	// user register
 	beego.CtrlPost("v1/user/register", (*controllers.UserController).Register)
 

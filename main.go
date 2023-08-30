@@ -14,7 +14,10 @@ func main() {
 		orm.Debug = true
 		server.BConfig.Listen.AdminAddr = "192.168.0.188"
 		server.BConfig.Listen.AdminPort = 9999
+		server.BConfig.WebConfig.DirectoryIndex = true
 	}
+
+	server.SetStaticPath("/assets", "./www/dist/assets")
 
 	server.Run()
 }

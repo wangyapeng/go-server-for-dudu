@@ -50,7 +50,7 @@ func (u *UserController) Login() {
 			"domain": "http://dq.com",
 		})
 		u.Ctx.SetCookie("userToken", token, 100, "/")
-		u.Ctx.Resp(token)
+		u.Ctx.Resp(map[string]string{"token": token})
 		u.ServeJSON()
 	}
 }
