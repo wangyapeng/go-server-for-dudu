@@ -5,7 +5,6 @@ import (
 	"dudu/util"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	// jwt "github.com/dgrijalva/jwt-go"
 )
@@ -18,15 +17,15 @@ func (*UserService) CreateNewUser(body []byte) (int64, error) {
 	req := models.User{}
 	json.Unmarshal(body, &req)
 
-	fmt.Println(body)
-	res := req.HasUser(req)
+	user := models.User{}
+	res, _ := req.HasUser(req.Telephone)
 
 	if res.Id != 0 {
 		res.PassWord = "nil"
 		return int64(res.Id), errors.New("用户已存在")
 	}
 
-	id, err := req.Insert(req)
+	id, err := user.Insert(req)
 	if err != nil {
 		log.Fatal(err)
 		return 0, err
@@ -46,13 +45,17 @@ func (*UserService) UserLogin(email, telephone, password string) (int16, error) 
 	localUser := models.User{}
 
 	if email != "" {
-		req := models.User{Email: email}
-		res := req.FindUserByEmail(req)
+		req := models.User{}
+		req.Email = email
+		res := localUser.FindUserByEmail(req)
 		localUser = res
 	} else {
-		req := models.User{Telephone: telephone}
-		res := req.HasUser(req)
-		localUser = res
+		user, err := localUser.HasUser(string(telephone))
+		if err != nil {
+			return 0, errors.New("没有找到相关用户，请去注册~")
+		}
+
+		localUser = user
 	}
 
 	if localUser.Id == 0 {

@@ -44,6 +44,7 @@ func (u *User) TableName() string {
 // 插入用户数据
 func (u *User) Insert(data User) (int16, error) {
 	user := new(User)
+
 	user.Name = data.Name
 	user.Telephone = data.Telephone
 	user.Email = data.Email
@@ -84,7 +85,7 @@ func (u *User) ValidUserInfo(data User) bool {
 	return true
 }
 
-func (u *User) HasUser(data User) User {
+func (u *User) HasUser(telephone string) (User, error) {
 
 	// 创建orm对象
 	o := orm.NewOrm()
@@ -92,12 +93,15 @@ func (u *User) HasUser(data User) User {
 	// 获取 QuerySeter 对象，并设置表名orders
 	qs := o.QueryTable("user")
 
+	fmt.Println(qs)
+
 	// 定义保存查询结果的变量
 	user := User{}
 
 	// 使用QuerySeter 对象构造查询条件，并执行查询。
-	err := qs.Filter("telephone", data.Telephone).One(&user)
+	err := qs.Filter("telephone", telephone).One(&user)
 
+	fmt.Println("查询到的数据---------->", user)
 	if err == orm.ErrMultiRows {
 		// 多条的时候报错
 		fmt.Printf("Returned Multi Rows Not One")
@@ -107,7 +111,7 @@ func (u *User) HasUser(data User) User {
 		fmt.Printf("Not row found")
 	}
 
-	return user
+	return user, err
 }
 
 func (u *User) FindUserByEmail(data User) User {

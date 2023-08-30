@@ -12,8 +12,9 @@ import (
 func main() {
 	if server.BConfig.RunMode == "dev" {
 		orm.Debug = true
-		server.BConfig.Listen.AdminAddr = "localhost"
-		server.BConfig.Listen.AdminPort = 8088
+		server.BConfig.Listen.AdminAddr = "192.168.0.188"
+		server.BConfig.Listen.AdminPort = 9999
 	}
+
 	server.Run()
 }
