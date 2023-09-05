@@ -56,6 +56,7 @@ func (*UserService) UserLogin(email, telephone, password string) (int16, error) 
 		}
 
 		localUser = user
+		localUser.Id = user.Id
 	}
 
 	if localUser.Id == 0 {
@@ -66,7 +67,8 @@ func (*UserService) UserLogin(email, telephone, password string) (int16, error) 
 	if !valid {
 		return 0, errors.New("密码错误~")
 	}
-	return 0, nil
+
+	return int16(localUser.Id), nil
 }
 
 func init() {

@@ -4,9 +4,11 @@ import (
 
 	// "encoding/json"
 
+	"dudu/models"
 	"dudu/services"
 	"dudu/util"
 	"fmt"
+	"strconv"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -39,17 +41,18 @@ func (u *UserController) Login() {
 	password := u.Ctx.Input.Query("password")
 
 	fmt.Println(telephone, password)
-	_, err := userService.UserLogin(email, telephone, password)
+	id, err := userService.UserLogin(email, telephone, password)
 
 	if err != nil {
 		u.Ctx.Output.Status = 500
 		u.Ctx.Resp(map[string]string{"errorMsg": err.Error(), "errorCode": "5001200"})
 	} else {
 		token, _ := util.GenerateToken()
-		u.Ctx.SetCookie("login", "true", 100, map[string]string{
-			"domain": "http://dq.com",
-		})
-		u.Ctx.SetCookie("userToken", token, 100, "/")
+
+		u.Ctx.Output.EnableGzip = true
+		u.Ctx.SetCookie("login", "true", 1000*60*60*24, "/", ".dq.com")
+		u.Ctx.SetCookie("userToken", token, 1000*60*60*24, "/", ".dq.com")
+		u.Ctx.SetCookie("userId", strconv.Itoa(int(id)), 1000*60*60*24, "/", ".dq.com")
 		u.Ctx.Resp(map[string]string{"token": token})
 		u.ServeJSON()
 	}
@@ -57,14 +60,22 @@ func (u *UserController) Login() {
 
 func (u *UserController) GetUserInfo() {
 	id := u.Ctx.Input.Query("id")
-
+	user := models.User{}
+	intId, _ := strconv.ParseInt(id, 10, 64)
+	res := user.FindUserById(intId)
 	if id == "" {
 		u.Ctx.Output.Status = 500
 		u.Ctx.Resp(map[string]string{"errorMsg": "参数错误", "errorCode": "5001200"})
 		u.ServeJSON()
 	}
 
-	u.Ctx.Output.Body([]byte("hello ,sir"))
+	if res.Id == 0 {
+		u.Ctx.Output.Status = 500
+		u.Ctx.Resp(map[string]string{"errorMsg": "未查询到信息", "errorCode": "5001201"})
+		u.ServeJSON()
+	}
+
+	u.Ctx.Resp(res)
 	u.ServeJSON()
 }
 

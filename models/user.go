@@ -101,7 +101,6 @@ func (u *User) HasUser(telephone string) (User, error) {
 	// 使用QuerySeter 对象构造查询条件，并执行查询。
 	err := qs.Filter("telephone", telephone).One(&user)
 
-	fmt.Println("查询到的数据---------->", user)
 	if err == orm.ErrMultiRows {
 		// 多条的时候报错
 		fmt.Printf("Returned Multi Rows Not One")
@@ -136,6 +135,34 @@ func (u *User) FindUserByEmail(data User) User {
 		// 没有找到记录
 		fmt.Printf("Not row found")
 	}
+
+	return user
+}
+
+func (u *User) FindUserById(id int64) User {
+
+	// 创建orm对象
+	o := orm.NewOrm()
+
+	// 获取 QuerySeter 对象，并设置表名orders
+	qs := o.QueryTable("user")
+
+	// 定义保存查询结果的变量
+	user := User{}
+
+	// 使用QuerySeter 对象构造查询条件，并执行查询。
+	err := qs.Filter("id", id).One(&user)
+
+	if err == orm.ErrMultiRows {
+		// 多条的时候报错
+		fmt.Printf("Returned Multi Rows Not One")
+	}
+	if err == orm.ErrNoRows {
+		// 没有找到记录
+		fmt.Printf("Not row found")
+	}
+
+	user.PassWord = ""
 
 	return user
 }
