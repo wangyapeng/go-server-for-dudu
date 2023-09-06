@@ -12,6 +12,8 @@ onMounted(() => {
 <style>
 @import './style.css';
 
-@import './theme.css'
+@import './theme.css';
+
+@import 'makeit-captcha/dist/captcha.min.css';
 
 </style>
